@@ -3,14 +3,21 @@
 #include <Adafruit_VS1053.h>
 #include <SD.h>
 
-#define VS1053_RESET   -1     // VS1053 reset pin (not used!)
-#define VS1053_CS       6     // VS1053 chip select pin (output)
-#define VS1053_DCS     10     // VS1053 Data/command select pin (output)
-#define CARDCS          5     // Card chip select pin
-// DREQ should be an Int pin *if possible* (not possible on 32u4)
-#define VS1053_DREQ     9     // VS1053 Data request, ideally an Interrupt pin
+// These are the pins used for the breakout example
+#define BREAKOUT_RESET  9      // VS1053 reset pin (output)
+#define BREAKOUT_CS     10     // VS1053 chip select pin (output)
+#define BREAKOUT_DCS    8      // VS1053 Data/command select pin (output)
+// These are the pins used for the music maker shield
+#define SHIELD_RESET  -1      // VS1053 reset pin (unused!)
+#define SHIELD_CS     7      // VS1053 chip select pin (output)
+#define SHIELD_DCS    6      // VS1053 Data/command select pin (output)
 
-Adafruit_VS1053_FilePlayer musicPlayer = Adafruit_VS1053_FilePlayer(VS1053_RESET, VS1053_CS, VS1053_DCS, VS1053_DREQ, CARDCS);
+// These are common pins between breakout and shield
+#define CARDCS 4     // Card chip select pin
+// DREQ should be an Int pin, see http://arduino.cc/en/Reference/attachInterrupt
+#define DREQ 3       // VS1053 Data request, ideally an Interrupt pin
+
+Adafruit_VS1053_FilePlayer musicPlayer = Adafruit_VS1053_FilePlayer(SHIELD_RESET, SHIELD_CS, SHIELD_DCS, DREQ, CARDCS);
 
 
 void setup() {
