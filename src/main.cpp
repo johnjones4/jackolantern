@@ -11,10 +11,15 @@
 
 Adafruit_VS1053_FilePlayer musicPlayer = Adafruit_VS1053_FilePlayer(SHIELD_RESET, SHIELD_CS, SHIELD_DCS, DREQ, CARDCS);
 
-#define PIR_MOTION_SENSOR 11
-#define DEBOUNCE 10000
+#define PIR_MOTION_SENSOR 9
+#define DEBOUNCE 3000
+#define MOTION_DELAY 10000
+
+#define N_LIGHT_PINS 3
+int lightPins[N_LIGHT_PINS] = {2, 5, 8};
 
 unsigned long started = 0;
+unsigned long lastMotion = 0;
 
 void setup() {
   Serial.begin(9600);
@@ -34,11 +39,38 @@ void setup() {
   Serial.println("SD OK!");
 
   pinMode(PIR_MOTION_SENSOR, INPUT);
+
+  for (int i = 0; i < N_LIGHT_PINS; i++) {
+    pinMode(lightPins[i], OUTPUT);
+    digitalWrite(lightPins[i], HIGH);
+    delay(500);
+    digitalWrite(lightPins[i], LOW);
+  }
+
+  if (! musicPlayer.useInterrupt(VS1053_FILEPLAYER_PIN_INT)) {
+    Serial.println(F("DREQ pin is not an interrupt pin"));
+  }
 }
 
 void loop() {
-  if (digitalRead(PIR_MOTION_SENSOR) && millis() - started >= DEBOUNCE) {
-    started = millis();
-    musicPlayer.startPlayingFile("/laugh.wav");
+  int motion = digitalRead(PIR_MOTION_SENSOR);
+  if (motion && millis() - lastMotion > MOTION_DELAY) {
+    if (started == 0) {
+      started = millis();
+    } else if (millis() - started > DEBOUNCE) {
+      started = 0;
+      Serial.println("Playing");
+      musicPlayer.startPlayingFile("/laugh.mp3");
+      while (musicPlayer.playingMusic) {
+        int nextPin = random(N_LIGHT_PINS);
+        int nextWait = random(50, 400);
+        digitalWrite(lightPins[nextPin], HIGH);
+        delay(nextWait);
+        digitalWrite(lightPins[nextPin], LOW);
+      }
+      lastMotion = millis();
+    }
+  } else {
+    started = 0;
   }
 }
